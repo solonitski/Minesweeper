@@ -27,35 +27,28 @@ void MineSweeper::createField() {
 
     // Инициализируем каждую кнопку и добавляем в сетку.
     for (int i = 0; i < numRows; ++i) {
-        for (int j = 0; j < numCols; ++j) {
-            MineButton *btn = new MineButton(this);
-            buttons[i * numCols + j] = btn;
+          for (int j = 0; j < numCols; ++j) {
+              MineButton *btn = new MineButton(this, i, j, numRows * numCols);
+              btn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-            // Устанавливаем политику размера, чтобы кнопки растягивались.
-            btn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-            gridLayout->addWidget(btn, i, j);
+              buttons[i * numCols + j] = btn;
+              gridLayout->addWidget(btn, i, j);
 
-            // Привязываем слоты на нажатие кнопок.
-            connect(btn, &MineButton::leftClicked, [=]() {
-                buttonLeftClicked(i, j);
-            });
-            connect(btn, &MineButton::rightClicked, [=]() {
-                buttonRightClicked(i, j);
-            });
-            connect(btn, &MineButton::middleClicked, [=]() {
-                buttonMiddleClicked(i, j);
-            });
-        }
-    }
-
-    // Устанавливаем правила растяжения.
-    for (int i = 0; i < numRows; ++i) {
-        gridLayout->setRowStretch(i, 1);
-    }
-    for (int j = 0; j < numCols; ++j) {
-        gridLayout->setColumnStretch(j, 1);
-    }
+              // Привязываем слоты на нажатие кнопок.
+              connect(btn, &MineButton::leftClicked, [=]() {
+                  buttonLeftClicked(i, j);
+              });
+              connect(btn, &MineButton::rightClicked, [=]() {
+                  buttonRightClicked(i, j);
+              });
+              connect(btn, &MineButton::middleClicked, [=]() {
+                  buttonMiddleClicked(i, j);
+              });
+          }
+      }
 }
+
+
 
 // Проверки на нажатия клавиш. (потом использовать для поведений на определенной кнопке.)
 void MineSweeper::buttonLeftClicked(int row, int col) {
