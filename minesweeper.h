@@ -3,8 +3,8 @@
 
 #include <QWidget>
 #include <QGridLayout>
-#include <QPushButton>
 #include <QVector>
+#include "minebutton.h"
 
 class MineSweeper : public QWidget {
     Q_OBJECT
@@ -14,7 +14,9 @@ public:
     void setFieldSize(int rows, int cols);
 
 private slots:
-    void buttonClicked(int row, int col);
+    void buttonLeftClicked(int row, int col);
+    void buttonRightClicked(int row, int col);
+    void buttonMiddleClicked(int row, int col);
 
 private:
     void createField();
@@ -22,7 +24,7 @@ private:
     int numRows;
     int numCols;
     QGridLayout *gridLayout;
-    QVector<QPushButton*> buttons;
+    QVector<MineButton*> buttons;
 };
 
 #endif // MINESWEEPER_H

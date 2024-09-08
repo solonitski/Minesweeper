@@ -1,20 +1,12 @@
-#include "mainwindow.h"
-
 #include <QApplication>
-#include <string>
+#include "minesweeper.h"
 
-int main(int argc, char *argv[])
-{
-	QApplication a(argc, argv);
+int main(int argc, char *argv[]) {
+    QApplication app(argc, argv);
 
-	bool dbgMode = false;
+    MineSweeper window;
+    window.setFieldSize(10, 10);
+    window.show();
 
-	if (argc > 1 && std::string(argv[1]) == "dbg")
-	{
-		dbgMode = true;
-	}
-
-	MainWindow w(dbgMode);
-	w.show();
-	return a.exec();
+    return app.exec();
 }
