@@ -4,11 +4,8 @@
 #include <QDebug>
 #include <QtMath>
 
-MineButton::MineButton(QWidget *parent, int x, int y, int size) : QPushButton(parent) {
-    this->x = x;
-    this->y = y;
-    this->size = size;
-}
+MineButton::MineButton(QWidget *parent, int x, int y, int size)
+    : QPushButton(parent), x(x), y(y), size(size) {}
 
 int MineButton::getX() {
     return x;
@@ -20,6 +17,38 @@ int MineButton::getY() {
 
 int MineButton::getSize() {
     return size;
+}
+
+void MineButton::setMine(bool mine) {
+    this->mine = mine;
+}
+
+bool MineButton::hasMine() const {
+    return mine;
+}
+
+void MineButton::setFlagged(bool flagged) {
+    this->flagged = flagged;
+}
+
+bool MineButton::isFlagged() const {
+    return flagged;
+}
+
+void MineButton::setNeighborMines(int count) {
+    neighborMines = count;
+}
+
+int MineButton::getNeighborMines() const {
+    return neighborMines;
+}
+
+void MineButton::setOpened(bool opened) {
+    this->opened = opened;
+}
+
+bool MineButton::isOpened() const {
+    return opened;
 }
 
 void MineButton::mousePressEvent(QMouseEvent *event) {
@@ -35,12 +64,8 @@ void MineButton::mousePressEvent(QMouseEvent *event) {
 
 void MineButton::resizeEvent(QResizeEvent *event)  {
     QPushButton::resizeEvent(event);
-    //чтобы найти размер одного квадратика просто находим площадь окна(до этого вычислив какой процент занимает верхняя строчка),
-    //с коэфом 0.5 норм работает, но нужно проапгрейдить формулу, а именно как-то правильно отрегулировать ширину
     float size = parentWidget()->size().width() * parentWidget()->size().height() * 0.5;
     size /= getSize();
     size = qSqrt(size);
     setGeometry(getX() * size, getY() * size, size, size);
 }
-
-

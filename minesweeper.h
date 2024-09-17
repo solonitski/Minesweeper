@@ -12,19 +12,30 @@ class MineSweeper : public QWidget {
 public:
     MineSweeper(QWidget *parent = nullptr);
     void setFieldSize(int rows, int cols);
+    void setNumMines(int numMines);
 
-private slots:
+private:
+    int numRows;
+    int numCols;
+    int totalMines;
+    bool minesPlaced;
+    bool gameOver;
+    QGridLayout *gridLayout;
+    QVector<MineButton*> buttons;
+
+    void createField();
+    void placeMines(int initialRow, int initialCol);
+    void calculateNeighborMines();
+    void openCell(int row, int col);
+    void revealMines();
+    void checkWinCondition();
+    void endGame(bool win);
+    void deactivateField(); // Деактивация поля
+    void quickOpen(int row, int col); // Быстрое открытие клеток
+
     void buttonLeftClicked(int row, int col);
     void buttonRightClicked(int row, int col);
     void buttonMiddleClicked(int row, int col);
-
-private:
-    void createField();
-
-    int numRows;
-    int numCols;
-    QGridLayout *gridLayout;
-    QVector<MineButton*> buttons;
 };
 
 #endif // MINESWEEPER_H

@@ -2,11 +2,12 @@
 #include "minesweeper.h"
 
 int main(int argc, char *argv[]) {
-    QApplication app(argc, argv);
+    QApplication a(argc, argv);
 
-    MineSweeper window;
-    window.setFieldSize(10, 10);
-    window.show();
+    MineSweeper w;
+    w.setFieldSize(10, 10);  // Установка размера поля
+    w.setNumMines(10);  // Установка фиксированного числа мин
+    w.show();
 
-    return app.exec();
+    return a.exec();
 }
