@@ -23,26 +23,19 @@ void MineSweeper::setNumMines(int numMines) {
 }
 
 void MineSweeper::createField() {
-    // Очистка существующих кнопок, если они есть.
     for (MineButton* btn : buttons) {
         gridLayout->removeWidget(btn);
         delete btn;
     }
     buttons.clear();
-
-    // Пересоздаем вектор кнопок.
     buttons.resize(numRows * numCols);
 
-    // Инициализируем каждую кнопку и добавляем в сетку.
     for (int i = 0; i < numRows; ++i) {
         for (int j = 0; j < numCols; ++j) {
             MineButton *btn = new MineButton(this, i, j, numRows * numCols);
             btn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-
             buttons[i * numCols + j] = btn;
             gridLayout->addWidget(btn, i, j);
-
-            // Привязываем слоты на нажатие кнопок.
             connect(btn, &MineButton::leftClicked, [=]() {
                 buttonLeftClicked(i, j);
             });
@@ -58,21 +51,17 @@ void MineSweeper::createField() {
 
 void MineSweeper::placeMines(int initialRow, int initialCol) {
     int placedMines = 0;
-
     while (placedMines < totalMines) {
         int row = QRandomGenerator::global()->bounded(numRows);
         int col = QRandomGenerator::global()->bounded(numCols);
         int index = row * numCols + col;
 
-        // Убеждаемся, что первая ячейка и уже размещенные мины не выбраны
         if ((row == initialRow && col == initialCol) || buttons[index]->hasMine()) {
             continue;
         }
-
         buttons[index]->setMine(true);
         placedMines++;
     }
-
     minesPlaced = true;
     calculateNeighborMines();
 }
@@ -144,6 +133,22 @@ void MineSweeper::revealMines() {
     }
 }
 
+void MineSweeper::markFlags() {
+    for (int i = 0; i < numRows; ++i) {
+        for (int j = 0; j < numCols; ++j) {
+            int index = i * numCols + j;
+            if (buttons[index]->isFlagged()) {
+                if (buttons[index]->hasMine()) {
+                    buttons[index]->setStyleSheet("QPushButton { background-color: lightgreen; color: black; }");
+                } else {
+                    buttons[index]->setStyleSheet("QPushButton { background-color: red; color: white; }");
+                }
+            }
+        }
+    }
+}
+
+
 void MineSweeper::checkWinCondition() {
     for (MineButton* btn : buttons) {
         if (!btn->hasMine() && !btn->isOpened()) {
@@ -155,15 +160,18 @@ void MineSweeper::checkWinCondition() {
 
 void MineSweeper::endGame(bool win) {
     gameOver = true;
-    deactivateField();  // Деактивируем поле
+    deactivateField();
 
     if (win) {
+        markFlags();
         QMessageBox::information(this, "Win", "You win!");
     } else {
         revealMines();
+        markFlags();
         QMessageBox::information(this, "Game Over", "You clicked on a mine!");
     }
 }
+
 
 void MineSweeper::deactivateField() {
     for (MineButton* btn : buttons) {

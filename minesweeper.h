@@ -15,13 +15,13 @@ public:
     void setNumMines(int numMines);
 
 private:
+    QGridLayout *gridLayout;
+    QVector<MineButton*> buttons;
     int numRows;
     int numCols;
     int totalMines;
     bool minesPlaced;
     bool gameOver;
-    QGridLayout *gridLayout;
-    QVector<MineButton*> buttons;
 
     void createField();
     void placeMines(int initialRow, int initialCol);
@@ -30,9 +30,11 @@ private:
     void revealMines();
     void checkWinCondition();
     void endGame(bool win);
-    void deactivateField(); // Деактивация поля
-    void quickOpen(int row, int col); // Быстрое открытие клеток
+    void deactivateField();
+    void quickOpen(int row, int col);
+    void markFlags();
 
+private slots:
     void buttonLeftClicked(int row, int col);
     void buttonRightClicked(int row, int col);
     void buttonMiddleClicked(int row, int col);
