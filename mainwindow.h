@@ -1,28 +1,14 @@
-#ifndef MINESWEEPER_H
-#define MINESWEEPER_H
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
 
-#include <QWidget>
-#include <QGridLayout>
-#include <QPushButton>
-#include <QVector>
+#include <QMainWindow>
 
-class MineSweeper : public QWidget {
+class MainWindow : public QMainWindow
+{
     Q_OBJECT
 
 public:
-    MineSweeper(QWidget *parent = nullptr);
-    void setFieldSize(int rows, int cols);
-
-private slots:
-    void buttonClicked(int row, int col);
-
-private:
-    void createField();
-
-    int numRows;
-    int numCols;
-    QGridLayout *gridLayout;
-    QVector<QPushButton*> buttons;
+    MainWindow(QWidget *parent = nullptr);
+    ~MainWindow();
 };
-
-#endif // MINESWEEPER_H
+#endif // MAINWINDOW_H
