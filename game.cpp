@@ -1,9 +1,13 @@
 #include "game.h"
+#include "squarebutton.h"
+#include "settingsdialog.h"
 #include <QRandomGenerator>
 #include <QMessageBox>
 
-Game::Game(int rows, int cols, int mines, QWidget *parent)
-    : ButtonGrid(rows, cols, parent), nRows(rows), nCols(cols), nMines(mines), firstClick(true), isEnd(false)
+Game::Game(Settings &settings, QWidget *parent)
+    : ButtonGrid(settings.getHeight(), settings.getWidth(), parent),
+    nRows(settings.getHeight()), nCols(settings.getWidth()), nMines(settings.getMines()),
+    firstClick(true), isEnd(false), settings(settings)
 {
     initGame();
 
@@ -20,6 +24,14 @@ Game::Game(int rows, int cols, int mines, QWidget *parent)
             });
         }
     }
+
+    centerButton->setText("😀");
+    centerButton->setStyleSheet("background-color: yellow;");
+    connect(centerButton, &SquareButton::leftClicked, this, &Game::resetGameSlot);
+
+    rightButton->setText("⚙");
+    rightButton->setStyleSheet("background-color: grey;");
+    connect(rightButton, &SquareButton::leftClicked, this, &Game::openSettingsDialog);
 }
 
 void Game::initGame()
@@ -92,7 +104,6 @@ void Game::handleLeftClick(int row, int col)
 
     revealCell(row, col);
 
-    // Проверка на выигрыш
     if (checkWinCondition()) {
         QMessageBox::information(nullptr, "Победа", "Вы выиграли!");
         lockField();
@@ -108,11 +119,10 @@ void Game::handleRightClick(int row, int col)
 
     toggleFlag(row, col);
 
-    // Проверка на выигрыш после установки флага
     if (checkWinCondition()) {
         QMessageBox::information(nullptr, "Победа", "Вы выиграли!");
         lockField();
-        isEnd = true; // Устанавливаем флаг завершения игры
+        isEnd = true;
     }
 }
 
@@ -133,7 +143,7 @@ void Game::revealCell(int row, int col)
     if (cell.hasMine) {
         btn->setText("💣");
         btn->setStyleSheet("background-color: red;");
-        gameOver(row, col);  // Игра окончена
+        gameOver(row, col);
     } else if (cell.adjacentMines > 0) {
         btn->setText(QString::number(cell.adjacentMines));
         btn->setEnabled(false);
@@ -177,18 +187,16 @@ void Game::toggleFlag(int row, int col)
 
 void Game::gameOver(int row, int col)
 {
-    if (isEnd) return; // Проверяем, что игра уже окончена, чтобы не выполнить код повторно.
+    if (isEnd) return;
 
-    isEnd = true; // Устанавливаем флаг завершения игры
+    isEnd = true;
 
-    // Отметить клетку, на которой произошел проигрыш
     int idx = row * nCols + col;
     SquareButton *btn = buttons.at(idx);
     btn->setStyleSheet("background-color: darkred;");
-    btn->setText("💣");
+    btn->setText("💥");
     btn->setEnabled(false);
 
-    // Раскрыть все ячейки
     for (int r = 0; r < nRows; ++r) {
         for (int c = 0; c < nCols; ++c) {
             int idx = r * nCols + c;
@@ -198,6 +206,7 @@ void Game::gameOver(int row, int col)
             if (cell.hasMine) {
                 if (!(r == row && c == col)) {
                     btn->setText("💣");
+                    btn->setStyleSheet("background-color: red;");
                 }
             }
 
@@ -206,7 +215,7 @@ void Game::gameOver(int row, int col)
                     btn->setStyleSheet("background-color: lightgreen;");
                     btn->setText("🚩");
                 } else {
-                    btn->setStyleSheet("background-color: lightcoral;");
+                    btn->setStyleSheet("background-color: red;");
                 }
             }
 
@@ -214,43 +223,52 @@ void Game::gameOver(int row, int col)
         }
     }
 
-    // Раскрыть все ячейки, которые не были ранее раскрыты
-    for (int r = 0; r < nRows; ++r) {
-        for (int c = 0; c < nCols; ++c) {
-            int idx = r * nCols + c;
-            if (!field[idx].isRevealed && !(r == row && c == col)) {
-                revealCell(r, c);
-            }
-        }
-    }
+    centerButton->setText("😢");
 
-    // Отобразить сообщение об окончании игры
-    QMessageBox::information(nullptr, "Игра окончена", "Вы подорвались на мине!");
-}
-
-
-bool Game::checkWinCondition() {
-    for (int i = 0; i < nRows * nCols; ++i) {
-        if (field[i].hasMine) {
-            if (!field[i].isFlagged) {
-                return false;
-            }
-        } else {
-            if (!field[i].isRevealed) {
-                return false;
-            }
-        }
-    }
-    lockField();
-    return true;
+    QMessageBox::information(nullptr, "Проигрыш", "Вы проиграли!");
 }
 
 void Game::lockField()
 {
-    for (int r = 0; r < nRows; ++r) {
-        for (int c = 0; c < nCols; ++c) {
-            int idx = r * nCols + c;
-            buttons.at(idx)->setEnabled(false);
+    for (auto &btn : buttons) {
+        btn->setEnabled(false);
+    }
+}
+
+bool Game::checkWinCondition()
+{
+    for (int i = 0; i < nRows * nCols; ++i) {
+        Cell& cell = field[i];
+        if (!cell.hasMine && !cell.isRevealed) {
+            return false;
         }
+    }
+    return true;
+}
+
+void Game::resetGame()
+{
+    this->close();
+    Game *newGame = new Game(settings);
+    newGame->setWindowTitle("Сапёр");
+    newGame->setMinimumHeight(10 * settings.getHeight() + 28);
+    newGame->setMinimumWidth(10 * settings.getWidth());
+    newGame->resize(30 * settings.getWidth(), 30 * settings.getHeight() + 42);
+    newGame->show();
+}
+
+void Game::resetGameSlot()
+{
+    resetGame();
+}
+
+void Game::openSettingsDialog() {
+    SettingsDialog dialog(settings, this);
+    if (dialog.exec() == QDialog::Accepted) {
+        nRows = settings.getHeight();
+        nCols = settings.getWidth();
+        nMines = settings.getMines();
+        resetGame();
+        initGame();
     }
 }

@@ -2,6 +2,7 @@
 #define GAME_H
 
 #include "buttongrid.h"
+#include "settings.h"
 #include <QVector>
 
 class Game : public ButtonGrid
@@ -9,7 +10,7 @@ class Game : public ButtonGrid
     Q_OBJECT
 
 public:
-    Game(int rows, int cols, int mines, QWidget *parent = nullptr);
+    Game(Settings& settings, QWidget *parent = nullptr);
 
 private:
     struct Cell {
@@ -37,6 +38,11 @@ private:
     void gameOver(int row, int col);
     bool checkWinCondition();
     void lockField();
+    void resetGame();
+    void resetGameSlot();
+    void openSettingsDialog();
+
+    Settings& settings; // Хранение настроек
 };
 
 #endif // GAME_H

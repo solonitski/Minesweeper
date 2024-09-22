@@ -8,15 +8,13 @@
 #include <QPushButton>
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), settings(10, 10, 10) // Инициализируем настройки значениями по умолчанию
+    : QMainWindow(parent), settings(10, 10, 10)
 {
     QWidget *centralWidget = new QWidget(this);
     QVBoxLayout *layout = new QVBoxLayout(centralWidget);
-    layout->setSpacing(0); // Убираем отступы между кнопками, если необходимо
-    layout->setContentsMargins(0, 0, 0, 0); // Убираем внешние отступы, если необходимо
+    layout->setSpacing(0);
+    layout->setContentsMargins(0, 0, 0, 0);
 
-    // Создаём кнопки без передачи this в качестве родителя,
-    // так как они уже будут добавлены в layout, который установит им правильного родителя
     QPushButton *startGameButton = new QPushButton("Start Game");
     QPushButton *settingsButton = new QPushButton("Settings");
     QPushButton *changeLanguageButton = new QPushButton("Change Language");
@@ -25,7 +23,6 @@ MainWindow::MainWindow(QWidget *parent)
     buttons.push_back(settingsButton);
     buttons.push_back(changeLanguageButton);
 
-    // Устанавливаем политику размера для кнопок, чтобы они расширялись
     for(auto &button : buttons) {
         button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
         layout->addWidget(button);
@@ -33,12 +30,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     setCentralWidget(centralWidget);
 
-    // Устанавливаем растяжку для равномерного распределения пространства
     layout->setStretch(0, 1);
     layout->setStretch(1, 1);
     layout->setStretch(2, 1);
-
-    // Подключаем сигналы
 
     connect(startGameButton, &QPushButton::clicked, this, &MainWindow::startGame);
     connect(settingsButton, &QPushButton::clicked, this, &MainWindow::openSettings);
@@ -49,25 +43,19 @@ MainWindow::~MainWindow() = default;
 
 void MainWindow::startGame()
 {
-    Game *game = new Game(settings.getWidth(), settings.getHeight(), settings.getMines());
+    Game *game = new Game(settings, nullptr);
     game->setWindowTitle("Сапёр");
-    game->setMinimumHeight(10);
-    game->setMinimumWidth(10);
-    game->resize(300, 300);
+    game->setMinimumHeight(10 * settings.getHeight() + 28);
+    game->setMinimumWidth(10 * settings.getWidth());
+    game->resize(30 * settings.getWidth(), 30 * settings.getHeight() + 42);
     game->show();
 
-    // Скрываем главное окно
     this->hide();
 }
 
 void MainWindow::openSettings()
 {
     SettingsDialog dialog(settings, this);
-    if (dialog.exec() == QDialog::Accepted)
-    {
-        // Новые настройки успешно применены
-        qDebug() << "Settings updated in main window!";
-    }
 }
 
 void MainWindow::changeLanguage()
