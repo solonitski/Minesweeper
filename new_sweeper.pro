@@ -13,12 +13,16 @@ SOURCES += \
     game.cpp \
     main.cpp \
     mainwindow.cpp \
+    settings.cpp \
+    settingsdialog.cpp \
     squarebutton.cpp
 
 HEADERS += \
     buttongrid.h \
     game.h \
     mainwindow.h \
+    settings.h \
+    settingsdialog.h \
     squarebutton.h
 
 TRANSLATIONS += \
