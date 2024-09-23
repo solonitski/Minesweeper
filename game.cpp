@@ -248,14 +248,19 @@ bool Game::checkWinCondition()
 
 void Game::resetGame()
 {
+    windowPosition = this->pos();
+
     this->close();
     Game *newGame = new Game(settings);
     newGame->setWindowTitle("Сапёр");
     newGame->setMinimumHeight(10 * settings.getHeight() + 28);
     newGame->setMinimumWidth(10 * settings.getWidth());
     newGame->resize(30 * settings.getWidth(), 30 * settings.getHeight() + 42);
+
+    newGame->move(windowPosition);
     newGame->show();
 }
+
 
 void Game::resetGameSlot()
 {
@@ -268,6 +273,7 @@ void Game::openSettingsDialog() {
         nRows = settings.getHeight();
         nCols = settings.getWidth();
         nMines = settings.getMines();
+
         resetGame();
         initGame();
     }

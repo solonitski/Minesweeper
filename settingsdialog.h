@@ -21,7 +21,7 @@ private:
     QLineEdit *heightLineEdit;
     QLineEdit *minesLineEdit;
 
-    Settings &settings; // Ссылка на оригинальные настройки
+    Settings &settings;
 };
 
 #endif // SETTINGSDIALOG_H

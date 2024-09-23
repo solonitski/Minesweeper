@@ -43,7 +43,7 @@ MainWindow::~MainWindow() = default;
 
 void MainWindow::startGame()
 {
-    Game *game = new Game(settings, nullptr);
+    Game *game = new Game(settings);
     game->setWindowTitle("Сапёр");
     game->setMinimumHeight(10 * settings.getHeight() + 28);
     game->setMinimumWidth(10 * settings.getWidth());
@@ -56,6 +56,9 @@ void MainWindow::startGame()
 void MainWindow::openSettings()
 {
     SettingsDialog dialog(settings, this);
+    if (dialog.exec() == QDialog::Accepted) {
+
+    }
 }
 
 void MainWindow::changeLanguage()

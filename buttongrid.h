@@ -14,7 +14,7 @@ public:
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
-    QSize minimumSizeHint() const;
+    QSize minimumSizeHint() const override;
 
 private slots:
     void buttonLeftClicked(int row, int col);

@@ -25,6 +25,7 @@ private:
     int nMines;
     bool firstClick;
     bool isEnd;
+    QPoint windowPosition;
     QVector<Cell> field;
 
     void initGame();

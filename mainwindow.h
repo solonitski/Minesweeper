@@ -21,7 +21,7 @@ private slots:
 
 private:
     QVector<QPushButton*> buttons;
-    Settings settings; // Экземпляр класса Settings
+    Settings settings;
 };
 
 #endif // MAINWINDOW_H
