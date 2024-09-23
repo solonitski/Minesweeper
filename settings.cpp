@@ -1,7 +1,7 @@
 #include "settings.h"
 
-Settings::Settings(int width, int height, int mines)
-    : m_width(width), m_height(height), m_mines(mines)
+Settings::Settings(int width, int height, int mines, bool mode)
+    : m_width(width), m_height(height), m_mines(mines), leftyMode(mode)
 {
 }
 
@@ -18,6 +18,11 @@ int Settings::getHeight() const
 int Settings::getMines() const
 {
     return m_mines;
+}
+
+bool Settings::getLeftyMode() const
+{
+    return leftyMode;
 }
 
 bool Settings::setWidth(int width)
@@ -50,14 +55,17 @@ bool Settings::setMines(int mines)
     return false;
 }
 
+bool Settings::setLeftyMode(bool mode) {
+    leftyMode = mode;
+    return true;
+}
+
 bool Settings::isValidFieldSize(int width, int height) const
 {
-    // Добавьте любые дополнительные проверки здесь
     return width > 0 && height > 0;
 }
 
 bool Settings::isValidMinesCount(int mines) const
 {
-    // Количество мин должно быть меньше площади поля
     return mines > 0 && mines < m_width * m_height;
 }

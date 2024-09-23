@@ -10,29 +10,39 @@ class Game : public ButtonGrid
     Q_OBJECT
 
 public:
-    Game(Settings& settings, QWidget *parent = nullptr);
+    Game(Settings &settings, QWidget *parent = nullptr, bool peek = false);
 
 private:
     struct Cell {
         bool hasMine;
         bool isRevealed;
         bool isFlagged;
+        bool isQuestioned;
         int adjacentMines;
     };
+
 
     int nRows;
     int nCols;
     int nMines;
+    int flagsCount;
+
     bool firstClick;
     bool isEnd;
+    bool leftyMode;
+    bool peekMode;
+
     QPoint windowPosition;
     QVector<Cell> field;
 
     void initGame();
     void placeMines(int initialRow, int initialCol);
     void calculateAdjacents();
+
     void handleLeftClick(int row, int col);
     void handleRightClick(int row, int col);
+    void processClick(int row, int col, bool isLeftClick);
+
     void revealCell(int row, int col);
     void revealAdjacentCells(int row, int col);
     void toggleFlag(int row, int col);
@@ -42,6 +52,9 @@ private:
     void resetGame();
     void resetGameSlot();
     void openSettingsDialog();
+    void goToMainMenu();
+    void swapLeftAndRight();
+    void togglePeekMode();
 
     Settings& settings; // Хранение настроек
 };

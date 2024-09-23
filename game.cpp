@@ -1,13 +1,21 @@
 #include "game.h"
 #include "squarebutton.h"
 #include "settingsdialog.h"
+#include "mainwindow.h"
 #include <QRandomGenerator>
 #include <QMessageBox>
 
-Game::Game(Settings &settings, QWidget *parent)
-    : ButtonGrid(settings.getHeight(), settings.getWidth(), parent),
-    nRows(settings.getHeight()), nCols(settings.getWidth()), nMines(settings.getMines()),
-    firstClick(true), isEnd(false), settings(settings)
+Game::Game(Settings &settings, QWidget *parent, bool peek)
+    : ButtonGrid(settings.getHeight(), settings.getWidth(), peek, parent),
+    nRows(settings.getHeight()),
+    nCols(settings.getWidth()),
+    nMines(settings.getMines()),
+    flagsCount(0),
+    firstClick(true),
+    isEnd(false),
+    leftyMode(settings.getLeftyMode()),
+    peekMode(peek),
+    settings(settings)
 {
     initGame();
 
@@ -25,20 +33,40 @@ Game::Game(Settings &settings, QWidget *parent)
         }
     }
 
+    // перезапуск игры
     centerButton->setText("😀");
     centerButton->setStyleSheet("background-color: yellow;");
     connect(centerButton, &SquareButton::leftClicked, this, &Game::resetGameSlot);
 
+    // кнопка настроек
     rightButton->setText("⚙");
     rightButton->setStyleSheet("background-color: grey;");
     connect(rightButton, &SquareButton::leftClicked, this, &Game::openSettingsDialog);
+
+    // выход в меню
+    additionalButton1->setText("🠻");
+    additionalButton1->setStyleSheet("background-color: pink;");
+    connect(additionalButton1, &SquareButton::leftClicked, this, &Game::goToMainMenu);
+
+    // кнопка для "левшей"
+    additionalButton2->setText("✋");
+    additionalButton2->setStyleSheet("background-color: purple;");
+    connect(additionalButton2, &SquareButton::leftClicked, this, &Game::swapLeftAndRight);
+
+    // кнопка "подглядывания"
+    if (peekMode) {
+        smallButton->setText("👁️");
+        connect(smallButton, &SquareButton::leftClicked, this, &Game::togglePeekMode);
+    }
+
+    setCounter(nMines);
 }
 
 void Game::initGame()
 {
     field.resize(nRows * nCols);
     for (int i = 0; i < nRows * nCols; ++i) {
-        field[i] = {false, false, false, 0};
+        field[i] = {false, false, false, false, 0};
     }
     isEnd = false;
 }
@@ -88,36 +116,52 @@ void Game::calculateAdjacents()
 
 void Game::handleLeftClick(int row, int col)
 {
-    int idx = row * nCols + col;
-    if (field[idx].isFlagged) {
-        return;
-    }
-
-    if (firstClick) {
-        firstClick = false;
-        placeMines(row, col);
-        calculateAdjacents();
-    }
-
-    if (field[idx].isRevealed)
-        return;
-
-    revealCell(row, col);
-
-    if (checkWinCondition()) {
-        QMessageBox::information(nullptr, "Победа", "Вы выиграли!");
-        lockField();
-        isEnd = true;
+    if (leftyMode) {
+        processClick(row, col, false);
+    } else {
+        processClick(row, col, true);
     }
 }
 
 void Game::handleRightClick(int row, int col)
 {
-    int idx = row * nCols + col;
-    if (field[idx].isRevealed)
-        return;
+    if (leftyMode) {
+        processClick(row, col, true);
+    } else {
+        processClick(row, col, false);
+    }
+}
 
-    toggleFlag(row, col);
+void Game::processClick(int row, int col, bool isLeftClick)
+{
+    int idx = row * nCols + col;
+    if (isEnd) {
+        return;
+    }
+
+    if (isLeftClick) {
+        if (field[idx].isFlagged || field[idx].isQuestioned) {
+            return;
+        }
+
+        if (firstClick) {
+            firstClick = false;
+            placeMines(row, col);
+            calculateAdjacents();
+        }
+
+        if (field[idx].isRevealed) {
+            return;
+        }
+
+        revealCell(row, col);
+    } else {
+        if (field[idx].isRevealed) {
+            return;
+        }
+
+        toggleFlag(row, col);
+    }
 
     if (checkWinCondition()) {
         QMessageBox::information(nullptr, "Победа", "Вы выиграли!");
@@ -176,13 +220,22 @@ void Game::toggleFlag(int row, int col)
     Cell& cell = field[idx];
     SquareButton *btn = buttons.at(idx);
 
-    if (!cell.isFlagged) {
+    if (!cell.isFlagged && !cell.isQuestioned) {
         cell.isFlagged = true;
         btn->setText("🚩");
-    } else {
+        flagsCount++;
+    } else if (cell.isFlagged) {
         cell.isFlagged = false;
+        cell.isQuestioned = true;
+        btn->setText("?");
+        flagsCount--;
+    } else if (cell.isQuestioned) {
+        cell.isQuestioned = false;
         btn->setText("");
     }
+
+    int remainingMines = nMines - flagsCount;
+    setCounter(remainingMines);
 }
 
 void Game::gameOver(int row, int col)
@@ -191,12 +244,6 @@ void Game::gameOver(int row, int col)
 
     isEnd = true;
 
-    int idx = row * nCols + col;
-    SquareButton *btn = buttons.at(idx);
-    btn->setStyleSheet("background-color: darkred;");
-    btn->setText("💥");
-    btn->setEnabled(false);
-
     for (int r = 0; r < nRows; ++r) {
         for (int c = 0; c < nCols; ++c) {
             int idx = r * nCols + c;
@@ -204,16 +251,17 @@ void Game::gameOver(int row, int col)
             SquareButton *btn = buttons.at(idx);
 
             if (cell.hasMine) {
-                if (!(r == row && c == col)) {
-                    btn->setText("💣");
-                    btn->setStyleSheet("background-color: red;");
-                }
+                btn->setText("💣");
+                btn->setStyleSheet("background-color: red;");
+            } else if (cell.adjacentMines > 0) {
+                btn->setText(QString::number(cell.adjacentMines));
+                btn->setStyleSheet(""); // Reset style
             }
 
             if (cell.isFlagged) {
+                btn->setText("🚩");
                 if (cell.hasMine) {
                     btn->setStyleSheet("background-color: lightgreen;");
-                    btn->setText("🚩");
                 } else {
                     btn->setStyleSheet("background-color: red;");
                 }
@@ -223,8 +271,13 @@ void Game::gameOver(int row, int col)
         }
     }
 
-    centerButton->setText("😢");
+    int idx = row * nCols + col;
+    SquareButton *btn = buttons.at(idx);
+    btn->setStyleSheet("background-color: darkred;");
+    btn->setText("💥");
+    btn->setEnabled(false);
 
+    centerButton->setText("😢");
     QMessageBox::information(nullptr, "Проигрыш", "Вы проиграли!");
 }
 
@@ -239,7 +292,7 @@ bool Game::checkWinCondition()
 {
     for (int i = 0; i < nRows * nCols; ++i) {
         Cell& cell = field[i];
-        if (!cell.hasMine && !cell.isRevealed) {
+        if ((!cell.hasMine && !cell.isRevealed) || (cell.hasMine && !cell.isFlagged)) {
             return false;
         }
     }
@@ -251,7 +304,7 @@ void Game::resetGame()
     windowPosition = this->pos();
 
     this->close();
-    Game *newGame = new Game(settings);
+    Game *newGame = new Game(settings, nullptr, peekMode);
     newGame->setWindowTitle("Сапёр");
     newGame->setMinimumHeight(10 * settings.getHeight() + 28);
     newGame->setMinimumWidth(10 * settings.getWidth());
@@ -276,5 +329,106 @@ void Game::openSettingsDialog() {
 
         resetGame();
         initGame();
+    }
+}
+
+void Game::goToMainMenu() {
+    this->close();
+    MainWindow *mainWindow = new MainWindow();
+    mainWindow->setWindowTitle("Main Menu");
+    mainWindow->resize(320, 180);
+    mainWindow->show();
+}
+
+void Game::swapLeftAndRight() {
+    leftyMode = !leftyMode;
+    settings.setLeftyMode(leftyMode);
+}
+
+void Game::togglePeekMode()
+{
+    static bool hiddenFieldsVisible = false;
+
+    if (!hiddenFieldsVisible)
+    {
+        for (int idx = 0; idx < field.size(); ++idx)
+        {
+            Cell& cell = field[idx];
+            SquareButton *btn = buttons.at(idx);
+
+            if (!cell.isRevealed)
+            {
+                if (cell.isFlagged)
+                {
+                    btn->setText("🚩");
+                    if (cell.hasMine)
+                    {
+                        btn->setStyleSheet("background-color: lightgreen;");
+                    }
+                    else
+                    {
+                        btn->setStyleSheet("");
+                    }
+                }
+                else if (cell.isQuestioned)
+                {
+                    btn->setText("?");
+                    if (cell.hasMine)
+                    {
+                        btn->setStyleSheet("background-color: lightgreen;");
+                    }
+                    else
+                    {
+                        btn->setStyleSheet("");
+                    }
+                }
+                else
+                {
+                    if (cell.hasMine)
+                    {
+                        btn->setText("💣");
+                    }
+                    else if (cell.adjacentMines > 0)
+                    {
+                        btn->setText(QString::number(cell.adjacentMines));
+                        btn->setStyleSheet("");
+                    }
+                    else
+                    {
+                        btn->setText("");
+                        btn->setStyleSheet("");
+                    }
+                }
+            }
+        }
+        hiddenFieldsVisible = true;
+    }
+    else
+    {
+        for (int idx = 0; idx < field.size(); ++idx)
+        {
+            Cell& cell = field[idx];
+            SquareButton *btn = buttons.at(idx);
+
+            if (!cell.isRevealed)
+            {
+                if (cell.isFlagged)
+                {
+                    btn->setText("🚩");
+                    btn->setStyleSheet("");
+                }
+                else if (cell.isQuestioned)
+                {
+                    btn->setText("?");
+                    btn->setStyleSheet("");
+                }
+                else
+                {
+                    btn->setText("");
+                    btn->setStyleSheet("");
+                }
+            }
+        }
+        hiddenFieldsVisible = false;
     }
 }

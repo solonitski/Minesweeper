@@ -22,6 +22,8 @@ private slots:
 private:
     QVector<QPushButton*> buttons;
     Settings settings;
+    bool debugMode = false;
+
 };
 
 #endif // MAINWINDOW_H

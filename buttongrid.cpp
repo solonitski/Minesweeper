@@ -3,9 +3,29 @@
 #include <QDebug>
 #include <QStyle>
 #include <QCoreApplication>
+#include <QLabel>
 
-ButtonGrid::ButtonGrid(int rows, int cols, QWidget *parent)
-    : QWidget(parent), nRows(rows), nCols(cols) {
+ButtonGrid::ButtonGrid(int rows, int cols, bool showSmallButton, QWidget *parent)
+    : QWidget(parent), nRows(rows), nCols(cols), counterValue(0), showButton(showSmallButton) {
+
+    // Создаем QLabel для текста "Флаги"
+    flagLabel = new QLabel("Мин:", this);
+    flagLabel->setStyleSheet("font-size: 16px; font-weight: bold;");
+
+    // Создаем QLabel для счетчика
+    counterLabel = new QLabel(this);
+    counterLabel->setStyleSheet("font-size: 16px; font-weight: bold;");
+    updateCounter(); // Обновляем счетчик
+
+    // Создаем маленькую кнопку, если флаг установлен
+    if (showButton) {
+        smallButton = new SquareButton(this);
+        smallButton->setStyleSheet("background-color: lightblue;"); // Пример стиля
+        smallButton->show();
+    } else {
+        smallButton = nullptr;
+    }
+
     for (int idx = 0; idx < nRows * nCols; ++idx) {
         SquareButton *btn = new SquareButton(this);
         buttons.push_back(btn);
@@ -38,6 +58,20 @@ ButtonGrid::ButtonGrid(int rows, int cols, QWidget *parent)
         qDebug() << "Правая кнопка: Левый клик";
     });
 
+    additionalButton1 = new SquareButton(this);
+    additionalButton1->setStyleSheet("background-color: lightcoral;");
+
+    connect(additionalButton1, &SquareButton::leftClicked, this, [=]() {
+        qDebug() << "Дополнительная кнопка 1: Левый клик";
+    });
+
+    additionalButton2 = new SquareButton(this);
+    additionalButton2->setStyleSheet("background-color: lightsalmon;");
+
+    connect(additionalButton2, &SquareButton::leftClicked, this, [=]() {
+        qDebug() << "Дополнительная кнопка 2: Левый клик";
+    });
+
     setMinimumSize(minimumSizeHint());
 }
 
@@ -59,43 +93,48 @@ void ButtonGrid::resizeEvent(QResizeEvent *event) {
 
     int cellSize = qMax(minCellSize, qMin(cellWidth, cellHeight));
 
-    int totalGridWidth = cellSize * nCols;
-    int totalGridHeight = cellSize * nRows;
-
     int centerSize = static_cast<int>(cellSize * scaleFactor);
     int rightSize = centerSize;
 
     // Центрируем контент по высоте
-    int totalContentHeight = std::max(centerSize, rightSize) + totalGridHeight;
+    int totalContentHeight = qMax(centerSize, rightSize) + (cellSize * nRows);
     int yOffset = (gridHeight - totalContentHeight) / 2;
     yOffset = qMax(0, yOffset);
 
     // Центрируем контент по ширине
-    int xOffset = (gridWidth - totalGridWidth) / 2;
+    int xOffset = (gridWidth - (cellSize * nCols) - rightSize) / 2;
     xOffset = qMax(0, xOffset);
 
     // Позиционируем центральную кнопку
-    int centerX = xOffset + (totalGridWidth - centerSize) / 2;
+    int centerX = xOffset + (cellSize * nCols - centerSize) / 2;
     int centerY = yOffset;
-
-    centerX = qMax(0, qMin(centerX, gridWidth - centerSize));
-    centerY = qMax(0, qMin(centerY, gridHeight - centerSize - totalGridHeight));
 
     centerButton->setGeometry(centerX, centerY, centerSize, centerSize);
     centerButton->raise();
 
     // Позиционируем правую кнопку
-    int rightX = centerX + centerSize; // Позиция справа от центральной кнопки
+    int rightX = centerX + centerSize;
     int rightY = centerY;
-
-    rightX = qMax(0, qMin(rightX, gridWidth - rightSize));
-    rightY = qMax(0, qMin(rightY, gridHeight - rightSize - totalGridHeight));
 
     rightButton->setGeometry(rightX, rightY, rightSize, rightSize);
     rightButton->raise();
 
+    // Позиционируем дополнительные кнопки
+    int additionalX1 = rightX + rightSize;
+    int additionalY1 = rightY;
+
+    additionalButton1->setGeometry(additionalX1, additionalY1, rightSize, rightSize);
+    additionalButton1->raise();
+
+    int additionalX2 = additionalX1 + rightSize;
+    int additionalY2 = additionalY1;
+
+    additionalButton2->setGeometry(additionalX2, additionalY2, rightSize, rightSize);
+    additionalButton2->raise();
+
     // Позиционируем кнопки сетки
-    int gridYStart = std::max(centerY + centerSize, rightY + rightSize);
+    int gridYStart = qMax(qMax(centerY + centerSize, rightY + rightSize),
+                          qMax(additionalY1 + rightSize, additionalY2 + rightSize));
     for (int idx = 0; idx < buttons.size(); ++idx) {
         int row = idx / nCols;
         int col = idx % nCols;
@@ -103,13 +142,45 @@ void ButtonGrid::resizeEvent(QResizeEvent *event) {
         int y = gridYStart + row * cellSize;
         buttons[idx]->setGeometry(x, y, cellSize, cellSize);
     }
+
+    // Позиционируем текст "Флаги"
+    int flagLabelWidth = flagLabel->sizeHint().width();
+    int flagLabelX = centerX - flagLabelWidth - 50;
+    int flagLabelY = centerY;
+
+    flagLabel->setGeometry(flagLabelX, flagLabelY, flagLabelWidth, 30);
+
+    // Позиционируем счетчик
+    int counterWidth = counterLabel->sizeHint().width();
+    counterLabel->setMinimumWidth(40);
+    int counterX = flagLabelX + flagLabelWidth + 5;
+    int counterY = centerY;
+
+    counterLabel->setGeometry(counterX, counterY, counterWidth, 30);
+
+    // Позиционируем маленькую кнопку, если она существует
+    if (smallButton) {
+        int smallButtonSize = static_cast<int>(cellSize * 0.5); // 50% от размера ячейки
+        int smallButtonX = additionalX2 + rightSize + 5; // Позиция справа от последней кнопки
+        int smallButtonY = centerY + (centerSize - smallButtonSize) / 2; // Вертикально по центру
+        smallButton->setGeometry(smallButtonX, smallButtonY, smallButtonSize, smallButtonSize);
+    }
 }
 
 QSize ButtonGrid::minimumSizeHint() const {
     const int minButtonSize = 10;
-    int totalWidth = minButtonSize * nCols + minButtonSize; // Дополнительное пространство для правой кнопки
+    int totalWidth = minButtonSize * nCols + minButtonSize * 2 + 50;
     int totalHeight = minButtonSize * nRows + static_cast<int>(minButtonSize * 1.2);
     return QSize(totalWidth, totalHeight);
+}
+
+void ButtonGrid::updateCounter() {
+    counterLabel->setText(QString::number(counterValue));
+}
+
+void ButtonGrid::setCounter(int value) {
+    counterValue = value;
+    updateCounter();
 }
 
 void ButtonGrid::buttonLeftClicked(int row, int col) {

@@ -6,6 +6,7 @@
 #include <QWidget>
 #include <QDebug>
 #include <QPushButton>
+#include <QCoreApplication>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), settings(10, 10, 10)
@@ -34,6 +35,11 @@ MainWindow::MainWindow(QWidget *parent)
     layout->setStretch(1, 1);
     layout->setStretch(2, 1);
 
+    QStringList args = QCoreApplication::arguments();
+    if (args.size() > 1 && args[1] == "dbg") {
+        debugMode = true; // Устанавливаем режим отладки
+    }
+
     connect(startGameButton, &QPushButton::clicked, this, &MainWindow::startGame);
     connect(settingsButton, &QPushButton::clicked, this, &MainWindow::openSettings);
     connect(changeLanguageButton, &QPushButton::clicked, this, &MainWindow::changeLanguage);
@@ -43,7 +49,7 @@ MainWindow::~MainWindow() = default;
 
 void MainWindow::startGame()
 {
-    Game *game = new Game(settings);
+    Game *game = new Game(settings, nullptr, debugMode);
     game->setWindowTitle("Сапёр");
     game->setMinimumHeight(10 * settings.getHeight() + 28);
     game->setMinimumWidth(10 * settings.getWidth());
