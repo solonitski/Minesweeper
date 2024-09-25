@@ -4,6 +4,8 @@
 #include "mainwindow.h"
 #include <QRandomGenerator>
 #include <QMessageBox>
+#include <QSettings>
+#include <QCoreApplication>
 
 Game::Game(Settings &settings, QWidget *parent, bool peek)
     : ButtonGrid(settings.getHeight(), settings.getWidth(), peek, parent),
@@ -17,6 +19,9 @@ Game::Game(Settings &settings, QWidget *parent, bool peek)
     peekMode(peek),
     settings(settings)
 {
+
+    //settings.loadSettings();
+    //loadGameState();
     initGame();
 
     for (int row = 0; row < nRows; ++row) {
@@ -164,7 +169,7 @@ void Game::processClick(int row, int col, bool isLeftClick)
     }
 
     if (checkWinCondition()) {
-        QMessageBox::information(nullptr, "Победа", "Вы выиграли!");
+        QMessageBox::information(nullptr, tr("Victory"), tr("You have won!"));
         lockField();
         isEnd = true;
     }
@@ -278,7 +283,7 @@ void Game::gameOver(int row, int col)
     btn->setEnabled(false);
 
     centerButton->setText("😢");
-    QMessageBox::information(nullptr, "Проигрыш", "Вы проиграли!");
+    QMessageBox::information(nullptr, tr("Defeat"), tr("You have lost!"));
 }
 
 void Game::lockField()
@@ -305,7 +310,7 @@ void Game::resetGame()
 
     this->close();
     Game *newGame = new Game(settings, nullptr, peekMode);
-    newGame->setWindowTitle("Сапёр");
+    newGame->setWindowTitle(tr("Minesweeper"));
     newGame->setMinimumHeight(10 * settings.getHeight() + 28);
     newGame->setMinimumWidth(10 * settings.getWidth());
     newGame->resize(30 * settings.getWidth(), 30 * settings.getHeight() + 42);
@@ -334,8 +339,8 @@ void Game::openSettingsDialog() {
 
 void Game::goToMainMenu() {
     this->close();
-    MainWindow *mainWindow = new MainWindow();
-    mainWindow->setWindowTitle("Main Menu");
+    MainWindow *mainWindow = new MainWindow(settings);
+    mainWindow->setWindowTitle(tr("Main Menu"));
     mainWindow->resize(320, 180);
     mainWindow->show();
 }
@@ -430,5 +435,58 @@ void Game::togglePeekMode()
             }
         }
         hiddenFieldsVisible = false;
+    }
+}
+
+void Game::closeEvent(QCloseEvent *event)
+{
+    saveGameState();
+    settings.saveSettings();
+    QWidget::closeEvent(event);
+}
+
+void Game::saveGameState()
+{
+    QSettings gameSettings(QCoreApplication::applicationDirPath() + "/gameState.ini", QSettings::IniFormat);
+    gameSettings.setValue("nRows", nRows);
+    gameSettings.setValue("nCols", nCols);
+    gameSettings.setValue("nMines", nMines);
+    gameSettings.setValue("flagsCount", flagsCount);
+    gameSettings.setValue("firstClick", firstClick);
+    gameSettings.setValue("isEnd", isEnd);
+    gameSettings.setValue("leftyMode", leftyMode);
+    gameSettings.setValue("peekMode", peekMode);
+
+    for (int i = 0; i < field.size(); ++i) {
+        QString baseKey = QString("cell%1").arg(i);
+        gameSettings.setValue(baseKey + "/hasMine", field[i].hasMine);
+        gameSettings.setValue(baseKey + "/isRevealed", field[i].isRevealed);
+        gameSettings.setValue(baseKey + "/isFlagged", field[i].isFlagged);
+        gameSettings.setValue(baseKey + "/isQuestioned", field[i].isQuestioned);
+        gameSettings.setValue(baseKey + "/adjacentMines", field[i].adjacentMines);
+    }
+}
+
+void Game::loadGameState()
+{
+    QSettings gameSettings(QCoreApplication::applicationDirPath() + "/gameState.ini", QSettings::IniFormat);
+    settings.loadSettings();
+    nRows = gameSettings.value("nRows", nRows).toInt();
+    nCols = gameSettings.value("nCols", nCols).toInt();
+    nMines = gameSettings.value("nMines", nMines).toInt();
+    flagsCount = gameSettings.value("flagsCount", flagsCount).toInt();
+    firstClick = gameSettings.value("firstClick", firstClick).toBool();
+    isEnd = gameSettings.value("isEnd", isEnd).toBool();
+    leftyMode = gameSettings.value("leftyMode", leftyMode).toBool();
+    peekMode = gameSettings.value("peekMode", peekMode).toBool();
+
+    field.resize(nRows * nCols);
+    for (int i = 0; i < field.size(); ++i) {
+        QString baseKey = QString("cell%1").arg(i);
+        field[i].hasMine = gameSettings.value(baseKey + "/hasMine", false).toBool();
+        field[i].isRevealed = gameSettings.value(baseKey + "/isRevealed", false).toBool();
+        field[i].isFlagged = gameSettings.value(baseKey + "/isFlagged", false).toBool();
+        field[i].isQuestioned = gameSettings.value(baseKey + "/isQuestioned", false).toBool();
+        field[i].adjacentMines = gameSettings.value(baseKey + "/adjacentMines", 0).toInt();
     }
 }

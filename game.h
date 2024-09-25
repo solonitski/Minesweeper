@@ -55,6 +55,9 @@ private:
     void goToMainMenu();
     void swapLeftAndRight();
     void togglePeekMode();
+    void closeEvent(QCloseEvent *event);
+    void saveGameState();
+    void loadGameState();
 
     Settings& settings; // Хранение настроек
 };

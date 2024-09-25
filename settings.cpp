@@ -1,7 +1,10 @@
 #include "settings.h"
+#include <QSettings>
+#include <QCoreApplication>
+#include <QDebug>
 
-Settings::Settings(int width, int height, int mines, bool mode)
-    : m_width(width), m_height(height), m_mines(mines), leftyMode(mode)
+Settings::Settings(int width, int height, int mines, bool mode, Language lang)
+    : m_width(width), m_height(height), m_mines(mines), leftyMode(mode), m_language(lang)
 {
 }
 
@@ -23,6 +26,11 @@ int Settings::getMines() const
 bool Settings::getLeftyMode() const
 {
     return leftyMode;
+}
+
+Language Settings::getLanguage() const
+{
+    return m_language;
 }
 
 bool Settings::setWidth(int width)
@@ -60,6 +68,11 @@ bool Settings::setLeftyMode(bool mode) {
     return true;
 }
 
+bool Settings::setLanguage(Language lang) {
+    m_language = lang;
+    return true;
+}
+
 bool Settings::isValidFieldSize(int width, int height) const
 {
     return width > 0 && height > 0;
@@ -68,4 +81,26 @@ bool Settings::isValidFieldSize(int width, int height) const
 bool Settings::isValidMinesCount(int mines) const
 {
     return mines > 0 && mines < m_width * m_height;
+}
+
+void Settings::loadSettings()
+{
+    QSettings settings(QCoreApplication::applicationDirPath() + "/config.ini", QSettings::IniFormat);
+
+    setWidth(settings.value("width", m_width).toInt());
+    setHeight(settings.value("height", m_height).toInt());
+    setMines(settings.value("mines", m_width).toInt());
+    setLeftyMode(settings.value("leftyMode", leftyMode).toBool());
+    setLanguage(static_cast<Language>(settings.value("language", static_cast<int>(m_language)).toInt()));
+}
+
+
+void Settings::saveSettings() const
+{
+    QSettings settings(QCoreApplication::applicationDirPath() + "/config.ini", QSettings::IniFormat);
+    settings.setValue("width", m_width);
+    settings.setValue("height", m_height);
+    settings.setValue("mines", m_mines);
+    settings.setValue("leftyMode", leftyMode);
+    settings.setValue("language", static_cast<int>(m_language));
 }

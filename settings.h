@@ -1,36 +1,42 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
-#include <QObject>
+#include <QVariant>
 
-class Settings : public QObject
-{
-    Q_OBJECT
+enum class Language {
+    EN,
+    RU,
+};
 
+Q_DECLARE_METATYPE(Language);
+
+class Settings {
 public:
-    // Конструктор с значениями по умолчанию
-    Settings(int width = 10, int height = 10, int mines = 10, bool mode = false);
+    Settings(int width = 10, int height = 10, int mines= 10, bool mode = 0, Language lang = Language::EN);
 
-    // Геттеры
     int getWidth() const;
     int getHeight() const;
     int getMines() const;
     bool getLeftyMode() const;
+    Language getLanguage() const;
 
-    // Сеттеры с проверкой
     bool setWidth(int width);
     bool setHeight(int height);
     bool setMines(int mines);
     bool setLeftyMode(bool mode);
+    bool setLanguage(Language lang);
+    void loadSettings();
+    void saveSettings() const;
 
 private:
+    bool isValidFieldSize(int width, int height) const;
+    bool isValidMinesCount(int mines) const;
+
     int m_width;
     int m_height;
     int m_mines;
     bool leftyMode;
-
-    bool isValidFieldSize(int width, int height) const;
-    bool isValidMinesCount(int mines) const;
+    Language m_language;  // Хранение значения языка
 };
 
 #endif // SETTINGS_H

@@ -5,119 +5,119 @@
         <name>MainWindow</name>
         <message>
             <source>Start Game</source>
-            <translation>Начать игру</translation>
+            <translation>Start Game</translation>
         </message>
         <message>
             <source>Settings</source>
-            <translation>Настройки</translation>
+            <translation>Settings</translation>
         </message>
         <message>
             <source>Change Language</source>
-            <translation>Изменить язык</translation>
+            <translation>Change Language</translation>
         </message>
         <message>
             <source>Minesweeper</source>
-            <translation>Сапёр</translation>
+            <translation>Minesweeper</translation>
         </message>
         <message>
             <source>Main Menu</source>
-            <translation>Главное меню</translation>
+            <translation>Main Menu</translation>
         </message>
     </context>
     <context>
         <name>SettingsDialog</name>
         <message>
             <source>Settings</source>
-            <translation>Настройки</translation>
+            <translation>Settings</translation>
         </message>
         <message>
             <source>Width:</source>
-            <translation>Ширина:</translation>
+            <translation>Width:</translation>
         </message>
         <message>
             <source>Height:</source>
-            <translation>Высота:</translation>
+            <translation>Height:</translation>
         </message>
         <message>
             <source>Mines:</source>
-            <translation>Мины:</translation>
+            <translation>Mines:</translation>
         </message>
         <message>
             <source>Language:</source>
-            <translation>Язык:</translation>
+            <translation>Language:</translation>
         </message>
         <message>
             <source>Apply</source>
-            <translation>Применить</translation>
+            <translation>Apply</translation>
         </message>
         <message>
             <source>Invalid width value</source>
-            <translation>Некорректное значение ширины.</translation>
+            <translation>Invalid width value.</translation>
         </message>
         <message>
             <source>Invalid height value</source>
-            <translation>Некорректное значение высоты.</translation>
+            <translation>Invalid height value.</translation>
         </message>
         <message>
             <source>Invalid mines value</source>
-            <translation>Некорректное количество мин.</translation>
+            <translation>Invalid mines value.</translation>
         </message>
         <message>
             <source>Invalid input</source>
-            <translation>Некорректный ввод</translation>
+            <translation>Invalid input</translation>
         </message>
     </context>
     <context>
         <name>LanguageDialog</name>
         <message>
             <source>Language</source>
-            <translation>Язык</translation>
+            <translation>Language</translation>
         </message>
         <message>
             <source>Select Language</source>
-            <translation>Выберите язык</translation>
+            <translation>Select Language</translation>
         </message>
         <message>
             <source>OK</source>
-            <translation>Применить</translation>
+            <translation>OK</translation>
         </message>
         <message>
             <source>Cancel</source>
-            <translation>Отмена</translation>
+            <translation>Cancel</translation>
         </message>
     </context>
     <context>
         <name>Game</name>
         <message>
             <source>Victory</source>
-            <translation>Победа</translation>
+            <translation>Victory</translation>
         </message>
         <message>
             <source>You have won!</source>
-            <translation>Вы выиграли!</translation>
+            <translation>You have won!</translation>
         </message>
         <message>
             <source>Defeat</source>
-            <translation>Поражение</translation>
+            <translation>Defeat</translation>
         </message>
         <message>
             <source>You have lost!</source>
-            <translation>Вы проиграли!</translation>
+            <translation>You have lost!</translation>
         </message>
         <message>
             <source>Minesweeper</source>
-            <translation>Сапер</translation>
+            <translation>Minesweeper</translation>
         </message>
         <message>
             <source>Main Menu</source>
-            <translation>Главное меню</translation>
+            <translation>Main Menu</translation>
         </message>
     </context>
     <context>
         <name>ButtonGrid</name>
         <message>
             <source>Mines:</source>
-            <translation>Мин:</translation>
+            <translation>Mines:</translation>
         </message>
     </context>
 </TS>

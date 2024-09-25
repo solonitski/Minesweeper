@@ -11,6 +11,7 @@ CONFIG += c++17
 SOURCES += \
     buttongrid.cpp \
     game.cpp \
+    language_dialog.cpp \
     main.cpp \
     mainwindow.cpp \
     settings.cpp \
@@ -20,12 +21,14 @@ SOURCES += \
 HEADERS += \
     buttongrid.h \
     game.h \
+    language_dialog.h \
     mainwindow.h \
     settings.h \
     settingsdialog.h \
     squarebutton.h
 
 TRANSLATIONS += \
+    new_sweeper_en_US.ts \
     new_sweeper_ru_RU.ts
 CONFIG += lrelease
 CONFIG += embed_translations

@@ -1,30 +1,34 @@
 #include "mainwindow.h"
 #include "game.h"
-#include "settings.h"
 #include "settingsdialog.h"
+#include "language_dialog.h"
 #include <QVBoxLayout>
-#include <QWidget>
-#include <QDebug>
-#include <QPushButton>
 #include <QCoreApplication>
+#include <QDir>
+#include <QDebug>
 
-MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), settings(10, 10, 10)
+MainWindow::MainWindow(Settings& settings, QWidget *parent)
+    : QMainWindow(parent), settings(settings), debugMode(false)
 {
+    this->settings.loadSettings();
+
+    translator = new QTranslator(this);
+
     QWidget *centralWidget = new QWidget(this);
     QVBoxLayout *layout = new QVBoxLayout(centralWidget);
     layout->setSpacing(0);
     layout->setContentsMargins(0, 0, 0, 0);
 
-    QPushButton *startGameButton = new QPushButton("Start Game");
-    QPushButton *settingsButton = new QPushButton("Settings");
-    QPushButton *changeLanguageButton = new QPushButton("Change Language");
+    setWindowTitle(tr("Main Menu"));
+    QPushButton *startGameButton = new QPushButton(tr("Start Game"));
+    QPushButton *settingsButton = new QPushButton(tr("Settings"));
+    QPushButton *changeLanguageButton = new QPushButton(tr("Change Language"));
 
     buttons.push_back(startGameButton);
     buttons.push_back(settingsButton);
     buttons.push_back(changeLanguageButton);
 
-    for(auto &button : buttons) {
+    for (auto &button : buttons) {
         button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
         layout->addWidget(button);
     }
@@ -37,23 +41,29 @@ MainWindow::MainWindow(QWidget *parent)
 
     QStringList args = QCoreApplication::arguments();
     if (args.size() > 1 && args[1] == "dbg") {
-        debugMode = true; // Устанавливаем режим отладки
+        debugMode = true;
     }
 
     connect(startGameButton, &QPushButton::clicked, this, &MainWindow::startGame);
     connect(settingsButton, &QPushButton::clicked, this, &MainWindow::openSettings);
-    connect(changeLanguageButton, &QPushButton::clicked, this, &MainWindow::changeLanguage);
+    connect(changeLanguageButton, &QPushButton::clicked, this, &MainWindow::openLanguageDialog);
+
+    changeLanguage(this->settings.getLanguage());
 }
 
-MainWindow::~MainWindow() = default;
+MainWindow::~MainWindow()
+{
+    this->settings.saveSettings();
+    delete translator;
+}
 
 void MainWindow::startGame()
 {
-    Game *game = new Game(settings, nullptr, debugMode);
-    game->setWindowTitle("Сапёр");
-    game->setMinimumHeight(10 * settings.getHeight() + 28);
-    game->setMinimumWidth(10 * settings.getWidth());
-    game->resize(30 * settings.getWidth(), 30 * settings.getHeight() + 42);
+    Game *game = new Game(this->settings, nullptr, debugMode);
+    game->setWindowTitle(tr("Minesweeper"));
+    game->setMinimumHeight(10 * this->settings.getHeight() + 28);
+    game->setMinimumWidth(10 * this->settings.getWidth());
+    game->resize(30 * this->settings.getWidth(), 30 * this->settings.getHeight() + 42);
     game->show();
 
     this->hide();
@@ -63,11 +73,50 @@ void MainWindow::openSettings()
 {
     SettingsDialog dialog(settings, this);
     if (dialog.exec() == QDialog::Accepted) {
-
+        this->settings.saveSettings();
     }
 }
 
-void MainWindow::changeLanguage()
+void MainWindow::openLanguageDialog()
 {
-    // В будущем здесь будет смена языка
+    LanguageDialog dialog(settings, this);
+    if (dialog.exec() == QDialog::Accepted) {
+        changeLanguage(settings.getLanguage());
+        this->settings.saveSettings();
+    }
+}
+
+void MainWindow::changeLanguage(Language lang)
+{
+    QString languageFile;
+
+    switch (lang) {
+    case Language::EN:
+        languageFile = "new_sweeper_en_US.qm";
+        break;
+    case Language::RU:
+        languageFile = "new_sweeper_ru_RU.qm";
+        break;
+    default:
+        return;
+    }
+
+    QString projectPath = QCoreApplication::applicationDirPath();
+    QDir dir(projectPath);
+    QString fullPath = dir.filePath(languageFile);
+
+    qApp->removeTranslator(translator);
+
+    if (translator->load(fullPath)) {
+        qApp->installTranslator(translator);
+        updateButtonTexts();
+        setWindowTitle(tr("Main Menu"));
+    }
+}
+
+void MainWindow::updateButtonTexts()
+{
+    buttons[0]->setText(tr("Start Game"));
+    buttons[1]->setText(tr("Settings"));
+    buttons[2]->setText(tr("Change Language"));
 }

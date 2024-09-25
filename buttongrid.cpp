@@ -9,7 +9,7 @@ ButtonGrid::ButtonGrid(int rows, int cols, bool showSmallButton, QWidget *parent
     : QWidget(parent), nRows(rows), nCols(cols), counterValue(0), showButton(showSmallButton) {
 
     // Создаем QLabel для текста "Флаги"
-    flagLabel = new QLabel("Мин:", this);
+    flagLabel = new QLabel(tr("Mines:"), this);
     flagLabel->setStyleSheet("font-size: 16px; font-weight: bold;");
 
     // Создаем QLabel для счетчика
@@ -47,30 +47,22 @@ ButtonGrid::ButtonGrid(int rows, int cols, bool showSmallButton, QWidget *parent
     centerButton = new SquareButton(this);
     centerButton->setStyleSheet("background-color: lightblue;");
 
-    connect(centerButton, &SquareButton::leftClicked, this, [=]() {
-        qDebug() << "Центральная кнопка: Левый клик";
-    });
+    connect(centerButton, &SquareButton::leftClicked, this, [=]() {});
 
     rightButton = new SquareButton(this);
     rightButton->setStyleSheet("background-color: lightgreen;");
 
-    connect(rightButton, &SquareButton::leftClicked, this, [=]() {
-        qDebug() << "Правая кнопка: Левый клик";
-    });
+    connect(rightButton, &SquareButton::leftClicked, this, [=]() {});
 
     additionalButton1 = new SquareButton(this);
     additionalButton1->setStyleSheet("background-color: lightcoral;");
 
-    connect(additionalButton1, &SquareButton::leftClicked, this, [=]() {
-        qDebug() << "Дополнительная кнопка 1: Левый клик";
-    });
+    connect(additionalButton1, &SquareButton::leftClicked, this, [=]() {});
 
     additionalButton2 = new SquareButton(this);
     additionalButton2->setStyleSheet("background-color: lightsalmon;");
 
-    connect(additionalButton2, &SquareButton::leftClicked, this, [=]() {
-        qDebug() << "Дополнительная кнопка 2: Левый клик";
-    });
+    connect(additionalButton2, &SquareButton::leftClicked, this, [=]() {});
 
     setMinimumSize(minimumSizeHint());
 }
@@ -183,14 +175,6 @@ void ButtonGrid::setCounter(int value) {
     updateCounter();
 }
 
-void ButtonGrid::buttonLeftClicked(int row, int col) {
-    qDebug() << QString("Левый клик в ячейке (%1, %2)").arg(row).arg(col);
-}
-
-void ButtonGrid::buttonRightClicked(int row, int col) {
-    qDebug() << QString("Правый клик в ячейке (%1, %2)").arg(row).arg(col);
-}
-
-void ButtonGrid::buttonMiddleClicked(int row, int col) {
-    qDebug() << QString("Средний клик в ячейке (%1, %2)").arg(row).arg(col);
-}
+void ButtonGrid::buttonLeftClicked(int row, int col) {}
+void ButtonGrid::buttonRightClicked(int row, int col) {}
+void ButtonGrid::buttonMiddleClicked(int row, int col) {}

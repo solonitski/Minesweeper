@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QTranslator>
 #include <QPushButton>
 #include <QVector>
 #include "settings.h"
@@ -11,19 +12,22 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+    explicit MainWindow(Settings &settings, QWidget *parent = nullptr);
+    ~MainWindow() override;
 
 private slots:
     void startGame();
     void openSettings();
-    void changeLanguage();
+    void openLanguageDialog();
 
 private:
-    QVector<QPushButton*> buttons;
-    Settings settings;
-    bool debugMode = false;
+    void changeLanguage(Language lang);
+    void updateButtonTexts();
 
+    Settings settings;
+    QTranslator *translator;
+    QVector<QPushButton*> buttons;
+    bool debugMode;
 };
 
 #endif // MAINWINDOW_H
