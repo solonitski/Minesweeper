@@ -59,7 +59,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::startGame()
 {
-    Game *game = new Game(this->settings, nullptr, debugMode);
+    Game *game = new Game(this->settings, nullptr, debugMode, true);
     game->setWindowTitle(tr("Minesweeper"));
     game->setMinimumHeight(10 * this->settings.getHeight() + 28);
     game->setMinimumWidth(10 * this->settings.getWidth());

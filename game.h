@@ -10,7 +10,7 @@ class Game : public ButtonGrid
     Q_OBJECT
 
 public:
-    Game(Settings &settings, QWidget *parent = nullptr, bool peek = false);
+    Game(Settings &settings, QWidget *parent = nullptr, bool peek = false, bool loadState = true);
 
 private:
     struct Cell {
@@ -58,6 +58,8 @@ private:
     void closeEvent(QCloseEvent *event);
     void saveGameState();
     void loadGameState();
+    void updateButtonFromCell(SquareButton *btn, const Cell &cell);
+    bool validateGameState();
 
     Settings& settings; // Хранение настроек
 };

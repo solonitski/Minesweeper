@@ -40,7 +40,7 @@
         </message>
         <message>
             <source>Mines:</source>
-            <translation>Мины:</translation>
+            <translation>Мин:</translation>
         </message>
         <message>
             <source>Language:</source>

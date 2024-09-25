@@ -6,8 +6,9 @@
 #include <QMessageBox>
 #include <QSettings>
 #include <QCoreApplication>
+#include <QFile>
 
-Game::Game(Settings &settings, QWidget *parent, bool peek)
+Game::Game(Settings &settings, QWidget *parent, bool peek, bool loadState)
     : ButtonGrid(settings.getHeight(), settings.getWidth(), peek, parent),
     nRows(settings.getHeight()),
     nCols(settings.getWidth()),
@@ -20,9 +21,11 @@ Game::Game(Settings &settings, QWidget *parent, bool peek)
     settings(settings)
 {
 
-    //settings.loadSettings();
-    //loadGameState();
-    initGame();
+    if (loadState && validateGameState()) {
+        loadGameState();
+    } else {
+        initGame();
+    }
 
     for (int row = 0; row < nRows; ++row) {
         for (int col = 0; col < nCols; ++col) {
@@ -309,7 +312,7 @@ void Game::resetGame()
     windowPosition = this->pos();
 
     this->close();
-    Game *newGame = new Game(settings, nullptr, peekMode);
+    Game *newGame = new Game(settings, nullptr, peekMode, false);
     newGame->setWindowTitle(tr("Minesweeper"));
     newGame->setMinimumHeight(10 * settings.getHeight() + 28);
     newGame->setMinimumWidth(10 * settings.getWidth());
@@ -440,8 +443,10 @@ void Game::togglePeekMode()
 
 void Game::closeEvent(QCloseEvent *event)
 {
-    saveGameState();
-    settings.saveSettings();
+    if (!isEnd) {
+        saveGameState();
+        settings.saveSettings();
+    }
     QWidget::closeEvent(event);
 }
 
@@ -471,22 +476,155 @@ void Game::loadGameState()
 {
     QSettings gameSettings(QCoreApplication::applicationDirPath() + "/gameState.ini", QSettings::IniFormat);
     settings.loadSettings();
-    nRows = gameSettings.value("nRows", nRows).toInt();
-    nCols = gameSettings.value("nCols", nCols).toInt();
-    nMines = gameSettings.value("nMines", nMines).toInt();
-    flagsCount = gameSettings.value("flagsCount", flagsCount).toInt();
-    firstClick = gameSettings.value("firstClick", firstClick).toBool();
-    isEnd = gameSettings.value("isEnd", isEnd).toBool();
-    leftyMode = gameSettings.value("leftyMode", leftyMode).toBool();
-    peekMode = gameSettings.value("peekMode", peekMode).toBool();
+
+    if (gameSettings.contains("nRows")) {
+        nRows = gameSettings.value("nRows").toInt();
+    }
+
+    if (gameSettings.contains("nCols")) {
+        nCols = gameSettings.value("nCols").toInt();
+    }
+
+    if (gameSettings.contains("nMines")) {
+        nMines = gameSettings.value("nMines").toInt();
+    }
+
+    if (gameSettings.contains("flagsCount")) {
+        flagsCount = gameSettings.value("flagsCount").toInt();
+    }
+
+    if (gameSettings.contains("firstClick")) {
+        firstClick = gameSettings.value("firstClick").toBool();
+    }
+
+    if (gameSettings.contains("isEnd")) {
+        isEnd = gameSettings.value("isEnd").toBool();
+    }
+
+    if (gameSettings.contains("leftyMode")) {
+        leftyMode = gameSettings.value("leftyMode").toBool();
+    }
+
+    if (gameSettings.contains("peekMode")) {
+        peekMode = gameSettings.value("peekMode").toBool();
+    }
 
     field.resize(nRows * nCols);
     for (int i = 0; i < field.size(); ++i) {
         QString baseKey = QString("cell%1").arg(i);
-        field[i].hasMine = gameSettings.value(baseKey + "/hasMine", false).toBool();
-        field[i].isRevealed = gameSettings.value(baseKey + "/isRevealed", false).toBool();
-        field[i].isFlagged = gameSettings.value(baseKey + "/isFlagged", false).toBool();
-        field[i].isQuestioned = gameSettings.value(baseKey + "/isQuestioned", false).toBool();
-        field[i].adjacentMines = gameSettings.value(baseKey + "/adjacentMines", 0).toInt();
+        field[i].hasMine = gameSettings.value(baseKey + "/hasMine").toBool();
+        field[i].isRevealed = gameSettings.value(baseKey + "/isRevealed").toBool();
+        field[i].isFlagged = gameSettings.value(baseKey + "/isFlagged").toBool();
+        field[i].isQuestioned = gameSettings.value(baseKey + "/isQuestioned").toBool();
+        field[i].adjacentMines = gameSettings.value(baseKey + "/adjacentMines").toInt();
     }
+
+    for (int r = 0; r < nRows; ++r) {
+        for (int c = 0; c < nCols; ++c) {
+            int idx = r * nCols + c;
+            SquareButton *btn = buttons.at(idx);
+            updateButtonFromCell(btn, field[idx]);
+        }
+    }
+}
+
+void Game::updateButtonFromCell(SquareButton *btn, const Cell &cell)
+{
+    if (cell.isRevealed) {
+        if (cell.hasMine) {
+            btn->setText("💣");
+            btn->setStyleSheet("background-color: red;");
+        } else {
+            if (cell.adjacentMines > 0) {
+                btn->setText(QString::number(cell.adjacentMines));
+            } else {
+                btn->setText("");
+            }
+        }
+        btn->setEnabled(false);
+    } else {
+        if (cell.isFlagged) {
+            btn->setText("🚩");
+        } else if (cell.isQuestioned) {
+            btn->setText("?");
+        } else {
+            btn->setText("");
+        }
+        btn->setEnabled(true);
+    }
+}
+
+bool Game::validateGameState()
+{
+    QSettings gameSettings(QCoreApplication::applicationDirPath() + "/gameState.ini", QSettings::IniFormat);
+    settings.loadSettings();
+
+    if (gameSettings.contains("nRows")) {
+        int rows = gameSettings.value("nRows").toInt();
+        if (!(rows > 0 && rows <= 50 && rows == settings.getHeight())) {
+            return false;
+        }
+    } else {
+        return false;
+    }
+
+    if (gameSettings.contains("nCols")) {
+        int cols = gameSettings.value("nCols").toInt();
+        if (!(cols > 0 && cols <= 50 && cols == settings.getWidth())) {
+            return false;
+        }
+    } else {
+        return false;
+    }
+
+    if (gameSettings.contains("nMines")) {
+        int mines = gameSettings.value("nMines").toInt();
+        if (!(mines >= 0 && mines <= nRows * nCols && mines == settings.getMines())) {
+            return false;
+        }
+    } else {
+        return false;
+    }
+
+    if (!gameSettings.contains("flagsCount")) {
+        return false;
+    }
+
+    if (!gameSettings.contains("firstClick")) {
+        return false;
+    }
+
+    if (!gameSettings.contains("isEnd")) {
+        return false;
+    }
+
+    if (!gameSettings.contains("leftyMode")) {
+        return false;
+    }
+
+    if (!gameSettings.contains("peekMode")) {
+        return false;
+    }
+
+    field.resize(nRows * nCols);
+    int minesInCellsCount = 0;
+
+    for (int i = 0; i < field.size(); ++i) {
+        QString baseKey = QString("cell%1").arg(i);
+        if (!gameSettings.contains(baseKey + "/hasMine") ||
+            !gameSettings.contains(baseKey + "/adjacentMines") ||
+            !gameSettings.contains(baseKey + "/isRevealed") ||
+            !gameSettings.contains(baseKey + "/isFlagged") ||
+            !gameSettings.contains(baseKey + "/isQuestioned")) {
+            return false;
+        }
+
+        bool hasMine = gameSettings.value(baseKey + "/hasMine").toBool();
+
+        if (hasMine) {
+            minesInCellsCount++;
+        }
+    }
+
+    return minesInCellsCount == nMines;
 }

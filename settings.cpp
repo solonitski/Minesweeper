@@ -69,13 +69,16 @@ bool Settings::setLeftyMode(bool mode) {
 }
 
 bool Settings::setLanguage(Language lang) {
-    m_language = lang;
-    return true;
+    if (lang < Language::COUNT) {
+        m_language = lang;
+        return true;
+    }
+    return false;
 }
 
 bool Settings::isValidFieldSize(int width, int height) const
 {
-    return width > 0 && height > 0;
+    return width > 0 && height > 0 && width < 51 && height < 51;
 }
 
 bool Settings::isValidMinesCount(int mines) const
@@ -87,13 +90,20 @@ void Settings::loadSettings()
 {
     QSettings settings(QCoreApplication::applicationDirPath() + "/config.ini", QSettings::IniFormat);
 
-    setWidth(settings.value("width", m_width).toInt());
-    setHeight(settings.value("height", m_height).toInt());
-    setMines(settings.value("mines", m_width).toInt());
-    setLeftyMode(settings.value("leftyMode", leftyMode).toBool());
-    setLanguage(static_cast<Language>(settings.value("language", static_cast<int>(m_language)).toInt()));
-}
+    bool isGood = setWidth(settings.value("width", m_width).toInt()) &&
+                  setHeight(settings.value("height", m_height).toInt()) &&
+                  setMines(settings.value("mines", m_width).toInt()) &&
+                  setLeftyMode(settings.value("leftyMode", leftyMode).toBool()) &&
+                  setLanguage(static_cast<Language>(settings.value("language", static_cast<int>(m_language)).toInt()));
 
+    if (!isGood) {
+        setWidth(10);
+        setHeight(10);
+        setMines(10);
+        setLeftyMode(false);
+        setLanguage(Language::EN);
+    }
+}
 
 void Settings::saveSettings() const
 {

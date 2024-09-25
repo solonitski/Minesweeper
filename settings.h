@@ -6,6 +6,8 @@
 enum class Language {
     EN,
     RU,
+//  ...
+    COUNT,
 };
 
 Q_DECLARE_METATYPE(Language);

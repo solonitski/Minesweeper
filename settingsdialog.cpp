@@ -40,7 +40,6 @@ void SettingsDialog::applySettings()
     bool valid = true;
     QString errorMsg;
 
-    // Проверяем корректность вводимых значений
     if (!settings.setWidth(newWidth)) {
         valid = false;
         errorMsg += tr("Invalid width value") + '\n';
@@ -55,8 +54,8 @@ void SettingsDialog::applySettings()
     }
 
     if (valid) {
-        accept();
         settings.saveSettings();
+        accept();
     } else {
         QMessageBox::warning(this, tr("Invalid input"), errorMsg);
     }
