@@ -29,7 +29,8 @@ HEADERS += \
 
 TRANSLATIONS += \
     new_sweeper_en_US.ts \
-    new_sweeper_ru_RU.ts
+    new_sweeper_ru_RU.ts \
+    new_sweeper_sr_RS.ts
 CONFIG += lrelease
 CONFIG += embed_translations
 

@@ -54,7 +54,6 @@ void SettingsDialog::applySettings()
     }
 
     if (valid) {
-        settings.saveSettings();
         accept();
     } else {
         QMessageBox::warning(this, tr("Invalid input"), errorMsg);

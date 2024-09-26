@@ -1,27 +1,27 @@
 #ifndef LANGUAGEDIALOG_H
 #define LANGUAGEDIALOG_H
 
-#include <QDialog>
+#include "settings.h"
+
 #include <QComboBox>
-#include <QPushButton>
-#include <QVBoxLayout>
+#include <QDialog>
 #include <QHBoxLayout>
 #include <QLabel>
-
-#include "settings.h"
+#include <QPushButton>
+#include <QVBoxLayout>
 
 class LanguageDialog : public QDialog
 {
-    Q_OBJECT
+	Q_OBJECT
 
-public:
-    explicit LanguageDialog(Settings &settings, QWidget *parent = nullptr);
-    Language selectedLanguage() const;
-    void acceptSelection();
+  public:
+	explicit LanguageDialog(Settings &settings, QWidget *parent = nullptr);
+	Language selectedLanguage() const;
+	void acceptSelection();
 
-private:
-    QComboBox *languageComboBox;
-    Settings &settings;
+  private:
+	QComboBox *languageComboBox;
+	Settings &settings;
 };
 
-#endif // LANGUAGEDIALOG_H
+#endif	  // LANGUAGEDIALOG_H

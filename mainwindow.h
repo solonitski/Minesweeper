@@ -24,10 +24,10 @@ private:
     void changeLanguage(Language lang);
     void updateButtonTexts();
 
-    Settings settings;
-    QTranslator *translator;
-    QVector<QPushButton*> buttons;
-    bool debugMode;
+	Settings settings;
+	QTranslator *translator;
+	QVector< QPushButton * > buttons;
+	bool debugMode;
 };
 
 #endif // MAINWINDOW_H

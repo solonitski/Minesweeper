@@ -15,18 +15,14 @@ class SettingsDialog : public QDialog
 
 public:
     explicit SettingsDialog(Settings &settings, QWidget *parent = nullptr);
+
 private slots:
     void applySettings();
 
 private:
-    void updateUI();
-    void applyLanguage(Language lang);
-    void updateButtonTexts();
-
     QLineEdit *widthLineEdit;
     QLineEdit *heightLineEdit;
     QLineEdit *minesLineEdit;
-    QTranslator *translator;
     Settings &settings;
 };
 

@@ -3,65 +3,73 @@
 
 #include "buttongrid.h"
 #include "settings.h"
+
+#include <QCloseEvent>
+#include <QPoint>
 #include <QVector>
 
 class Game : public ButtonGrid
 {
-    Q_OBJECT
+	Q_OBJECT
 
-public:
-    Game(Settings &settings, QWidget *parent = nullptr, bool peek = false, bool loadState = true);
+		public:
+					Game(Settings &settings, QWidget *parent = nullptr, bool peek = false, bool loadState = true);
 
-private:
-    struct Cell {
-        bool hasMine;
-        bool isRevealed;
-        bool isFlagged;
-        bool isQuestioned;
-        int adjacentMines;
-    };
+  private:
+	struct Cell
+	{
+		bool hasMine;
+		bool isRevealed;
+		bool isFlagged;
+		bool isQuestioned;
+		int adjacentMines;
+	};
 
+	Settings &settings;
 
-    int nRows;
-    int nCols;
-    int nMines;
-    int flagsCount;
+	int nRows;
+	int nCols;
+	int nMines;
+	int flagsCount;
 
-    bool firstClick;
-    bool isEnd;
-    bool leftyMode;
-    bool peekMode;
+	bool firstClick;
+	bool isEnd;
+	bool leftyMode;
+	bool peekMode;
 
-    QPoint windowPosition;
-    QVector<Cell> field;
+	QPoint windowPosition;
+	QVector< Cell > field;
 
-    void initGame();
-    void placeMines(int initialRow, int initialCol);
-    void calculateAdjacents();
+	void initGame();
+	void placeMines(int initialRow, int initialCol);
+	void calculateAdjacents();
 
-    void handleLeftClick(int row, int col);
-    void handleRightClick(int row, int col);
-    void processClick(int row, int col, bool isLeftClick);
+	void handleLeftClick(int row, int col);
+	void handleRightClick(int row, int col);
+	void processClick(int row, int col, bool isLeftClick);
 
-    void revealCell(int row, int col);
-    void revealAdjacentCells(int row, int col);
-    void toggleFlag(int row, int col);
-    void gameOver(int row, int col);
-    bool checkWinCondition();
-    void lockField();
-    void resetGame();
-    void resetGameSlot();
-    void openSettingsDialog();
-    void goToMainMenu();
-    void swapLeftAndRight();
-    void togglePeekMode();
-    void closeEvent(QCloseEvent *event);
-    void saveGameState();
-    void loadGameState();
-    void updateButtonFromCell(SquareButton *btn, const Cell &cell);
-    bool validateGameState();
+	void revealCell(int row, int col);
+	void revealAdjacentCells(int row, int col);
+	void toggleFlag(int row, int col);
+	void gameOver(int row, int col);
+	bool checkWinCondition();
+	void lockField();
+	void resetGame();
+	void updateButtonFromCell(SquareButton *btn, const Cell &cell);
+	bool validateGameState();
 
-    Settings& settings; // Хранение настроек
+	void saveGameState();
+	void loadGameState();
+
+  protected:
+	void closeEvent(QCloseEvent *event) override;
+
+  private slots:
+	void resetGameSlot();
+	void openSettingsDialog();
+	void goToMainMenu();
+	void swapLeftAndRight();
+	void togglePeekMode();
 };
 
-#endif // GAME_H
+#endif	  // GAME_H

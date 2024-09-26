@@ -15,12 +15,11 @@ ButtonGrid::ButtonGrid(int rows, int cols, bool showSmallButton, QWidget *parent
     // Создаем QLabel для счетчика
     counterLabel = new QLabel(this);
     counterLabel->setStyleSheet("font-size: 16px; font-weight: bold;");
-    updateCounter(); // Обновляем счетчик
+    updateCounter();
 
-    // Создаем маленькую кнопку, если флаг установлен
     if (showButton) {
         smallButton = new SquareButton(this);
-        smallButton->setStyleSheet("background-color: lightblue;"); // Пример стиля
+        smallButton->setStyleSheet("background-color: lightblue;");
         smallButton->show();
     } else {
         smallButton = nullptr;
@@ -29,19 +28,9 @@ ButtonGrid::ButtonGrid(int rows, int cols, bool showSmallButton, QWidget *parent
     for (int idx = 0; idx < nRows * nCols; ++idx) {
         SquareButton *btn = new SquareButton(this);
         buttons.push_back(btn);
-
-        int row = idx / nCols;
-        int col = idx % nCols;
-
-        connect(btn, &SquareButton::leftClicked, this, [=]() {
-            buttonLeftClicked(row, col);
-        });
-        connect(btn, &SquareButton::rightClicked, this, [=]() {
-            buttonRightClicked(row, col);
-        });
-        connect(btn, &SquareButton::middleClicked, this, [=]() {
-            buttonMiddleClicked(row, col);
-        });
+        connect(btn, &SquareButton::leftClicked, this, [=]() {});
+        connect(btn, &SquareButton::rightClicked, this, [=]() {});
+        connect(btn, &SquareButton::middleClicked, this, [=]() {});
     }
 
     centerButton = new SquareButton(this);
@@ -152,9 +141,9 @@ void ButtonGrid::resizeEvent(QResizeEvent *event) {
 
     // Позиционируем маленькую кнопку, если она существует
     if (smallButton) {
-        int smallButtonSize = static_cast<int>(cellSize * 0.5); // 50% от размера ячейки
-        int smallButtonX = additionalX2 + rightSize + 5; // Позиция справа от последней кнопки
-        int smallButtonY = centerY + (centerSize - smallButtonSize) / 2; // Вертикально по центру
+        int smallButtonSize = static_cast<int>(cellSize * 0.5);
+        int smallButtonX = additionalX2 + rightSize + 5;
+        int smallButtonY = centerY + (centerSize - smallButtonSize) / 2;
         smallButton->setGeometry(smallButtonX, smallButtonY, smallButtonSize, smallButtonSize);
     }
 }
@@ -175,6 +164,3 @@ void ButtonGrid::setCounter(int value) {
     updateCounter();
 }
 
-void ButtonGrid::buttonLeftClicked(int row, int col) {}
-void ButtonGrid::buttonRightClicked(int row, int col) {}
-void ButtonGrid::buttonMiddleClicked(int row, int col) {}

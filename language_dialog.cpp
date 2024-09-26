@@ -10,6 +10,7 @@ LanguageDialog::LanguageDialog(Settings &settings, QWidget *parent)
 
     languageComboBox->addItem("English", QVariant::fromValue(Language::EN));
     languageComboBox->addItem("Русский", QVariant::fromValue(Language::RU));
+    languageComboBox->addItem("Српски", QVariant::fromValue(Language::SR));
 
     // Устанавливаем текущий язык
     int index = languageComboBox->findData(QVariant::fromValue(settings.getLanguage()));

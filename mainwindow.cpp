@@ -63,7 +63,11 @@ void MainWindow::startGame()
     game->setWindowTitle(tr("Minesweeper"));
     game->setMinimumHeight(10 * this->settings.getHeight() + 28);
     game->setMinimumWidth(10 * this->settings.getWidth());
-    game->resize(30 * this->settings.getWidth(), 30 * this->settings.getHeight() + 42);
+    int width = this->settings.getWidth() <= 8 ? 400 : 400;
+    int height = this->settings.getHeight() <= 8 ? 200 : 450;
+    width *= this->settings.getWidth() >= 20 ? 2 : 1;
+    height *= this->settings.getHeight() >= 20 ? 2 : 1;
+    game->resize(width, height);
     game->show();
 
     this->hide();
@@ -73,7 +77,8 @@ void MainWindow::openSettings()
 {
     SettingsDialog dialog(settings, this);
     if (dialog.exec() == QDialog::Accepted) {
-        this->settings.saveSettings();
+        settings.saveSettings();
+        settings.saveSettings();
     }
 }
 
@@ -96,6 +101,9 @@ void MainWindow::changeLanguage(Language lang)
         break;
     case Language::RU:
         languageFile = "new_sweeper_ru_RU.qm";
+        break;
+    case Language::SR:
+        languageFile = "new_sweeper_sr_RS.qm";
         break;
     default:
         return;
